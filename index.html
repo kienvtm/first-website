@@ -1,32 +1,107 @@
 <!doctype html>
-<html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>D3 Bar Chart</title>
+    <style>
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+        margin: 24px;
+      }
+      #chart {
+        max-width: 720px;
+      }
+      .axis path,
+      .axis line {
+        shape-rendering: crispEdges;
+      }
+      .bar {
+      }
+      .label {
+        font-size: 12px;
+      }
+      .title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
   <body>
-    <h1>Kienvtm</h1>
-    <p>I'm learning html</p>
-    <ul>
-      An unordered list of 3 hobbies or interests
-      <li>TV</li>
-      <li>Books</li>
-      <li>Novels</li>
-    </ul>
+    <div class="title">Bar chart (D3)</div>
+    <div id="chart"></div>
 
-    <ol>
-      An ordered list of your top 3 favorite movies, books, or songs
-      <li>Naruto</li>
-      <li>Breaking bad</li>
-      <li>How I met your mother</li>
-    </ol>
+    <!-- D3 from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
-    <p>
-      A link to your favorite website:
-      <a href="https://www.google.com">Google</a>
-    </p>
+    <script>
+      const data = [
+        { name: "A", value: 1 },
+        { name: "B", value: 5 },
+        { name: "C", value: 8 },
+        { name: "D", value: 10 },
+      ];
 
-    <img
-      src="https://picsum.photos/300/200"
-      alt="A rndom"
-      width="300"
-      height="200"
-    />
+      const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+      const width = 720 - margin.left - margin.right;
+      const height = 360 - margin.top - margin.bottom;
+
+      const svg = d3
+        .select("#chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      const x = d3
+        .scaleBand()
+        .domain(data.map((d) => d.name))
+        .range([0, width])
+        .padding(0.2);
+
+      const y = d3
+        .scaleLinear()
+        .domain([0, d3.max(data, (d) => d.value) ?? 0])
+        .nice()
+        .range([height, 0]);
+
+      // Axes
+      g.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+
+      g.append("g").attr("class", "axis").call(d3.axisLeft(y).ticks(5));
+
+      // Bars
+      g.selectAll("rect")
+        .data(data)
+        .join("rect")
+        .attr("class", "bar")
+        .attr("x", (d) => x(d.name))
+        .attr("y", (d) => y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => height - y(d.value));
+
+      // Value labels (optional)
+      g.selectAll("text.label")
+        .data(data)
+        .join("text")
+        .attr("class", "label")
+        .attr("x", (d) => (x(d.name) ?? 0) + x.bandwidth() / 2)
+        .attr("y", (d) => y(d.value) - 6)
+        .attr("text-anchor", "middle")
+        .text((d) => d.value);
+    </script>
   </body>
 </html>
